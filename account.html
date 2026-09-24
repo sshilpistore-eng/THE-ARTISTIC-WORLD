@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Account — The Artist World</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="siteHeader"></header>
+
+<section class="hero" style="padding-bottom:20px;">
+  <div class="wrap reveal">
+    <div class="profile-head">
+      <div class="avatar"></div>
+      <div>
+        <h1 id="profName" style="margin-bottom:2px;">Your Name</h1>
+        <p id="profAbout" style="margin:0;">Tell the world about your art.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap grid-2 reveal">
+    <div>
+      <h3>Edit profile</h3>
+      <div class="field"><label>Name</label><input id="inName" placeholder="Your name"></div>
+      <div class="field"><label>Location</label><input id="inLocation" placeholder="City, country"></div>
+      <div class="field"><label>About</label><textarea id="inAbout" placeholder="A short artist bio..."></textarea></div>
+      <button class="btn brown" id="saveProfile">Save Profile</button>
+    </div>
+    <div>
+      <h3>New post</h3>
+      <div class="field"><label>Caption</label><textarea id="inCaption" placeholder="What did you make today?"></textarea></div>
+      <p style="font-size:.8rem;">This demo stores posts in your browser only — an image upload field would need a real backend to host files.</p>
+      <button class="btn" id="postBtn">Post to World Artist</button>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head reveal"><h2>My posts</h2></div>
+    <div id="myPosts" class="reveal"></div>
+  </div>
+</section>
+
+<footer id="siteFooter"></footer>
+<script src="js/app.js"></script>
+<script>
+renderHeader('account.html'); renderFooter(); initReveal();
+
+function loadProfile(){
+  const p = Store.get('profile', {name:'Your Name', location:'', about:'Tell the world about your art.'});
+  document.getElementById('profName').textContent = p.name;
+  document.getElementById('profAbout').textContent = p.about;
+  document.getElementById('inName').value = p.name;
+  document.getElementById('inLocation').value = p.location;
+  document.getElementById('inAbout').value = p.about;
+}
+loadProfile();
+document.getElementById('saveProfile').addEventListener('click', ()=>{
+  const p = {name: document.getElementById('inName').value || 'Your Name',
+             location: document.getElementById('inLocation').value,
+             about: document.getElementById('inAbout').value || 'Tell the world about your art.'};
+  Store.set('profile', p);
+  loadProfile();
+});
+
+function renderMyPosts(){
+  const p = Store.get('profile', {name:'Your Name'});
+  const posts = Store.get('posts', SEED_POSTS).filter(x=>x.name===p.name);
+  const box = document.getElementById('myPosts');
+  box.innerHTML = posts.length ? '' : '<p>No posts yet — create one above.</p>';
+  posts.forEach(post=>{
+    box.innerHTML += `<div class="post"><div class="post-head"><div class="post-avatar"></div><div><div class="post-name">${post.name}</div><div class="post-time">Recently</div></div></div><div class="post-img">Artwork image</div><div class="post-caption">${post.caption}</div></div>`;
+  });
+}
+renderMyPosts();
+
+document.getElementById('postBtn').addEventListener('click', ()=>{
+  const caption = document.getElementById('inCaption').value.trim();
+  if(!caption) return;
+  const profile = Store.get('profile', {name:'Your Name'});
+  const posts = Store.get('posts', SEED_POSTS);
+  posts.unshift({id:'p'+Date.now(), name:profile.name, caption, likes:0, liked:false, comments:[], reposts:0});
+  Store.set('posts', posts);
+  document.getElementById('inCaption').value = '';
+  renderMyPosts();
+  alert('Posted! View it on the World Artist page.');
+});
+</script>
+</body>
+</html>

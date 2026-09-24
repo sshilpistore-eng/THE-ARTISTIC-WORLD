@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>World Artist — The Artist World</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="siteHeader"></header>
+
+<section class="hero" style="padding-bottom:20px;">
+  <div class="wrap hero-inner reveal">
+    <h1>World Artist.</h1>
+    <p>See what other artists are posting. Like, comment, repost, share, add a friend, or start a chat.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap grid-2" style="align-items:start;">
+    <div class="reveal">
+      <div class="section-head" style="margin-bottom:18px;"><h2>Feed</h2></div>
+      <div id="feed"></div>
+    </div>
+    <div class="reveal">
+      <div class="section-head" style="margin-bottom:18px;"><h2>People</h2></div>
+      <div id="people"></div>
+      <div class="section-head" style="margin:30px 0 18px;"><h2>Chat</h2></div>
+      <div class="chat-shell">
+        <div class="chat-list" id="chatList"></div>
+        <div class="chat-main">
+          <div class="chat-msgs" id="chatMsgs"></div>
+          <div class="chat-input">
+            <input id="chatInput" placeholder="Message...">
+            <button id="chatSend">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="siteFooter"></footer>
+<script src="js/app.js"></script>
+<script>
+renderHeader('world.html'); renderFooter(); initReveal();
+
+const PEOPLE = ['Maya Chen','Diego Alvarez','Priya Nair','Sam O.','Theo R.'];
+
+/* --- Feed --- */
+function timeAgo(){ return 'Recently'; }
+function renderFeed(){
+  const posts = Store.get('posts', SEED_POSTS);
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+  posts.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'post';
+    el.innerHTML = `
+      <div class="post-head"><div class="post-avatar"></div><div><div class="post-name">${p.name}</div><div class="post-time">${timeAgo()}</div></div></div>
+      <div class="post-img">Artwork image</div>
+      <div class="post-caption">${p.caption}</div>
+      <div class="post-actions">
+        <button class="likeBtn ${p.liked?'active':''}" data-id="${p.id}">❤ ${p.likes}</button>
+        <button class="commentToggle" data-id="${p.id}">💬 ${p.comments.length}</button>
+        <button class="repostBtn" data-id="${p.id}">🔁 ${p.reposts}</button>
+        <button class="shareBtn" data-id="${p.id}">↗ Share</button>
+      </div>
+      <div class="comment-box" id="cbox-${p.id}">
+        <div class="comment-list">${p.comments.map(c=>`<div><strong>${c.n}:</strong> ${c.t}</div>`).join('')}</div>
+        <div class="comment-input"><input placeholder="Write a comment..." data-id="${p.id}" class="commentInput"><button class="btn small" data-id="${p.id}">Post</button></div>
+      </div>`;
+    feed.appendChild(el);
+  });
+
+  feed.querySelectorAll('.likeBtn').forEach(b=>b.addEventListener('click', ()=>{
+    const posts = Store.get('posts', SEED_POSTS);
+    const p = posts.find(x=>x.id===b.dataset.id);
+    p.liked = !p.liked; p.likes += p.liked?1:-1;
+    Store.set('posts', posts); renderFeed();
+  }));
+  feed.querySelectorAll('.commentToggle').forEach(b=>b.addEventListener('click', ()=>{
+    document.getElementById('cbox-'+b.dataset.id).classList.toggle('open');
+  }));
+  feed.querySelectorAll('.repostBtn').forEach(b=>b.addEventListener('click', ()=>{
+    const posts = Store.get('posts', SEED_POSTS);
+    const p = posts.find(x=>x.id===b.dataset.id);
+    p.reposts += 1;
+    Store.set('posts', posts); renderFeed();
+  }));
+  feed.querySelectorAll('.shareBtn').forEach(b=>b.addEventListener('click', ()=>{
+    alert('Link copied (demo) — sharing outside this prototype needs a live backend.');
+  }));
+  feed.querySelectorAll('.comment-input button').forEach(b=>b.addEventListener('click', ()=>{
+    const input = feed.querySelector(`.commentInput[data-id="${b.dataset.id}"]`);
+    if(!input.value.trim()) return;
+    const posts = Store.get('posts', SEED_POSTS);
+    const p = posts.find(x=>x.id===b.dataset.id);
+    p.comments.push({n:'You', t:input.value.trim()});
+    Store.set('posts', posts); renderFeed();
+  }));
+}
+renderFeed();
+
+/* --- People / friends --- */
+function renderPeople(){
+  const friends = Store.get('friends', []);
+  const box = document.getElementById('people');
+  box.innerHTML = '';
+  PEOPLE.forEach(name=>{
+    const isFriend = friends.includes(name);
+    const row = document.createElement('div');
+    row.className = 'card';
+    row.style.display='flex'; row.style.alignItems='center'; row.style.justifyContent='space-between'; row.style.marginBottom='10px'; row.style.padding='14px 18px';
+    row.innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><div class="post-avatar"></div><span>${name}</span></div>
+      <button class="btn small ${isFriend?'outline':'brown'}" data-name="${name}">${isFriend?'Friends ✓':'Add Friend'}</button>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll('button').forEach(b=>b.addEventListener('click', ()=>{
+    let friends = Store.get('friends', []);
+    if(friends.includes(b.dataset.name)) friends = friends.filter(f=>f!==b.dataset.name);
+    else friends.push(b.dataset.name);
+    Store.set('friends', friends); renderPeople();
+  }));
+}
+renderPeople();
+
+/* --- Chat (mocked, per-browser only) --- */
+let activeChat = PEOPLE[0];
+function renderChatList(){
+  const list = document.getElementById('chatList');
+  list.innerHTML = '';
+  PEOPLE.forEach(name=>{
+    const d = document.createElement('div');
+    d.textContent = name;
+    if(name===activeChat) d.classList.add('active');
+    d.addEventListener('click', ()=>{ activeChat = name; renderChatList(); renderChatMsgs(); });
+    list.appendChild(d);
+  });
+}
+function renderChatMsgs(){
+  const msgs = Store.get('chat_'+activeChat, [{from:'them', text:`Hi! Thanks for checking out my work.`}]);
+  const box = document.getElementById('chatMsgs');
+  box.innerHTML = msgs.map(m=>`<div class="${m.from==='me'?'me':'them'}">${m.text}</div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+document.getElementById('chatSend').addEventListener('click', ()=>{
+  const input = document.getElementById('chatInput');
+  if(!input.value.trim()) return;
+  const msgs = Store.get('chat_'+activeChat, []);
+  msgs.push({from:'me', text: input.value.trim()});
+  input.value='';
+  Store.set('chat_'+activeChat, msgs);
+  renderChatMsgs();
+});
+document.getElementById('chatInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('chatSend').click(); });
+renderChatList(); renderChatMsgs();
+</script>
+</body>
+</html>

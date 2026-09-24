@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>History — The Artist World</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="siteHeader"></header>
+
+<section class="hero" style="padding-bottom:20px;">
+  <div class="wrap hero-inner reveal">
+    <h1>A journey through art history.</h1>
+    <p>Fourteen periods, from the first cave paintings to today. Click any period to open it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="timeline reveal" id="timeline"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Literature &amp; broader culture</h2>
+      <p>Art rarely moves alone — these are the movements it shared a moment with.</p>
+    </div>
+    <div class="grid-3 reveal">
+      <div class="card"><h3>Renaissance humanism</h3><p>Alongside Renaissance painting, writers like Petrarch and Erasmus revived classical texts and reframed the individual as a subject worth studying closely.</p></div>
+      <div class="card"><h3>Romantic poetry</h3><p>Wordsworth, Byron and Shelley pursued the same interest in emotion and the natural sublime that Romantic painters explored on canvas.</p></div>
+      <div class="card"><h3>Modernist fiction</h3><p>Writers such as Woolf and Joyce experimented with form and perspective in the novel at the same time Cubism and Fauvism reshaped painting.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer id="siteFooter"></footer>
+<script src="js/app.js"></script>
+<script>
+renderHeader('history.html'); renderFooter(); initReveal();
+const tl = document.getElementById('timeline');
+SEED_HISTORY.forEach((h,i)=>{
+  const div = document.createElement('div');
+  div.className = 't-item';
+  div.innerHTML = `<h3>${h.period}</h3><div class="era">${h.range}</div><div class="t-body"><p>${h.body}</p></div>`;
+  div.addEventListener('click', ()=>div.classList.toggle('open'));
+  tl.appendChild(div);
+});
+</script>
+</body>
+</html>
